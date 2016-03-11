@@ -1,6 +1,7 @@
 ﻿using FileTreeWatcher;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,13 +19,34 @@ namespace FileTreeWatcherTest
         static void Main(string[] args)
         {
             Console.WriteLine($"FileTreeWatcherTest");
+
+            if (!args.Any())
+            {
+                Console.WriteLine($"Usage: FileTreeWatcherTest path [ path...]");
+                Environment.Exit(1);
+            }
+            if (!args.Any(arg => Directory.Exists(arg)))
+            {
+                Console.WriteLine($"No valid path given");
+                Environment.Exit(1);
+            }
             FileTreeWatcher.FileTreeWatcher.ChangeEvent += FileTreeWatcher_ChangeEvent;
 
             var watcher = new FileTreeWatcher.FileTreeWatcher();
             var fileSizeTracker = new FileTreeSizeTracker();
 
-            Console.WriteLine($"scanning...");
-            watcher.AddWatchedPath(System.IO.Path.GetTempPath());
+
+            foreach(var arg in args)
+            {
+                if (!Directory.Exists(arg))
+                {
+                    Console.WriteLine($"Invalid path '{arg}', ignoring");
+                    continue;
+                }
+                Console.WriteLine($"scanning {arg}...");
+
+                watcher.AddWatchedPath(arg);
+            }
 
             Console.WriteLine($"finished initial scan.");
             firstScan = false;
